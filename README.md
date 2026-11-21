@@ -2,8 +2,6 @@
 
 # Screening desk: alert closing that shows its working
 
-> **About this copy.** This is the public copy of our entry. The organisers' development data, the system's answers on it and our hand labels are not included, because the data was given to event participants only. To run it, unzip the event's data room into `hackathon/institutions/` (one folder per institution: `bank`, `emoney`, `investment`, `payments_fx`).
-
 Track 1 (transaction monitoring) entry for the London Financial Crime Hackathon, 21 November 2026.
 
 The system reads the transaction monitoring alerts of four UK institutions and decides each case as an analyst would: **CLOSE** when the documents on file explain every alert, **RFI** when one named document would settle it, **ESCALATE** to the MLRO when there is a sign of crime. Every decision comes with a reason that names the case's own documents, people and amounts, and the evidence it relied on. A viewer replays how each decision was reached, step by step.
