@@ -169,13 +169,20 @@ async function titleCard(page, html, hold, key) {
   hold = Math.max(hold, spoken ? spoken + 600 : 0);
   await page.evaluate((html) => {
     const cur = document.getElementById('demo-cursor'); if (cur) cur.style.visibility = 'hidden';
-    document.getElementById('demo-card')?.remove();
-    const el = document.createElement('div');
-    el.id = 'demo-card';
-    el.style.cssText = 'position:fixed;inset:0;z-index:999997;display:grid;place-items:center;background:radial-gradient(1100px 700px at 50% 30%,#fffdf6,#f4f0e6 70%);opacity:0;transition:opacity .5s;pointer-events:none';
-    el.innerHTML = '<div style="max-width:1000px;padding:0 70px;text-align:center">' + html + '</div>';
-    document.body.appendChild(el);
-    requestAnimationFrame(() => { el.style.opacity = '1'; });
+    let el = document.getElementById('demo-card');
+    const inner = '<div class="demo-card-in" style="max-width:1000px;padding:0 70px;text-align:center;opacity:0;transition:opacity .5s">' + html + '</div>';
+    if (el) {
+      el.style.opacity = '1';
+      el.innerHTML = inner;
+    } else {
+      el = document.createElement('div');
+      el.id = 'demo-card';
+      el.style.cssText = 'position:fixed;inset:0;z-index:999997;display:grid;place-items:center;background:radial-gradient(1100px 700px at 50% 30%,#fffdf6,#f4f0e6 70%);opacity:0;transition:opacity .5s;pointer-events:none';
+      el.innerHTML = inner;
+      document.body.appendChild(el);
+      requestAnimationFrame(() => { el.style.opacity = '1'; });
+    }
+    requestAnimationFrame(() => requestAnimationFrame(() => { el.querySelector('.demo-card-in').style.opacity = '1'; }));
   }, html);
   await page.waitForTimeout(hold);
 }
@@ -184,18 +191,44 @@ const SUB = (t) => '<div style="font:400 24px/1.5 \'Avenir Next\',\'Segoe UI\',s
 const MARK = (size) => '<div style="width:' + size + 'px;height:' + size + 'px;margin:0 auto 26px">' + LOGO.replace('<svg ', '<svg style="width:100%;height:100%" ') + '</div>';
 const WORD = '<div style="font:italic 500 40px/1 \'Iowan Old Style\',Charter,Georgia,serif;color:#1b1915;letter-spacing:-.015em"><b style="font-style:normal;font-weight:600">Screening</b> desk</div>';
 
+async function quiet(page, extra = 150) {
+  const wait = voiceUntil - Date.now();
+  if (wait > 0) await page.waitForTimeout(wait + extra);
+}
+
 // Show the screening steps one at a time, as the narration reaches each.
 async function hideSteps(page) {
   await page.evaluate(() => { const b = document.getElementById('skip'); if (b) b.click(); document.querySelectorAll('.step').forEach((s) => s.classList.remove('on')); document.getElementById('process').scrollTop = 0; });
 }
+async function stepLine(page, n, caption, hold, offset = 18) {
+  await quiet(page);
+  await speak(page, caption);
+  await page.evaluate((t) => { const bar = document.getElementById('demo-subtitle'); if (bar) { bar.textContent = t; bar.style.opacity = '1'; } }, caption);
+  await page.evaluate((n) => document.querySelector(`.steps .step:nth-child(${n})`).classList.add('on'), n);
+  await scrollTo(page, step(n), offset, hold);
+}
+
 async function showStep(page, n, offset = 18) {
+  await quiet(page);
   await page.evaluate((n) => document.querySelector(`.steps .step:nth-child(${n})`).classList.add('on'), n);
   await scrollTo(page, step(n), offset, 700);
 }
 
 async function record(page) {
-  // 0:00  The question.
-  await page.goto(BASE + '/?r=' + Date.now() + '#bank/BK-CS125943');
+  // 0:00  The question. A plain cover is in place before the page paints, so the video opens on the card.
+  await page.addInitScript(() => {
+    if (!/cover=1/.test(location.search)) return;
+    const put = () => {
+      if (document.getElementById('demo-card') || !document.body) return false;
+      const el = document.createElement('div');
+      el.id = 'demo-card';
+      el.style.cssText = 'position:fixed;inset:0;z-index:999997;display:grid;place-items:center;background:radial-gradient(1100px 700px at 50% 30%,#fffdf6,#f4f0e6 70%);opacity:1;transition:opacity .5s;pointer-events:none';
+      document.body.appendChild(el);
+      return true;
+    };
+    if (!put()) new MutationObserver((m, o) => { if (put()) o.disconnect(); }).observe(document.documentElement, { childList: true, subtree: true });
+  });
+  await page.goto(BASE + '/?cover=1&r=' + Date.now() + '#bank/BK-CS125943');
   await page.waitForSelector('.step');
   await injectOverlays(page);
   await hideSteps(page);
@@ -203,26 +236,21 @@ async function record(page) {
   await titleCard(page, MARK(120) + WORD + SUB('Reads each alert the way a good analyst does, and shows its working.'), 1200, 'title');
   await dropCard(page);
 
-  // 0:15  The seven screening steps, one at a time.
-  await showStep(page, 1, 120);
-  await say(page, '1 · Read the case', 2600);
-  await showStep(page, 2);
-  await say(page, '2 · Read the alert', 2600);
-  await showStep(page, 3);
-  await say(page, '3 · Read the policy', 1800);
-  await showStep(page, 4);
-  await say(page, '4 · Match the documents to the money', 2600);
-  await showStep(page, 5);
-  await say(page, '5 · Look for signs of crime', 1400);
+  // 0:15  The seven screening steps, one at a time: each appears as its line starts.
+  await stepLine(page, 1, '1 · Read the case', 2600, 120);
+  await stepLine(page, 2, '2 · Read the alert', 2600);
+  await stepLine(page, 3, '3 · Read the policy', 1800);
+  await stepLine(page, 4, '4 · Match the documents to the money', 2600);
+  await stepLine(page, 5, '5 · Look for signs of crime', 1600);
   await moveAndClick(page, `${step(5)} button[data-ev="PSC-5155"]`, 'control register', 2600);
-  await showStep(page, 6);
-  await say(page, '6 · Test each alert', 2000);
-  await showStep(page, 7);
-  await say(page, '7 · Decide: ESCALATE, and never contact the customer', 3200);
+  await stepLine(page, 6, '6 · Test each alert', 2000);
+  await stepLine(page, 7, '7 · Decide: ESCALATE, and never contact the customer', 3200);
+  await quiet(page);
   await scrollTo(page, '.next', 40, 600);
   await say(page, '', 1800);
 
   // 1:10  Most alerts close.
+  await quiet(page);
   await page.goto(BASE + '/?r=' + Date.now() + '#investment/IV-CS103503');
   await page.waitForSelector('.step');
   await injectOverlays(page);
@@ -230,15 +258,17 @@ async function record(page) {
   await scrollTo(page, step(4), 18, 500);
   await page.click(`${step(4)} button[data-ev="GFT-2351"]`).catch(() => {});
   await say(page, 'Most alerts do close: the gift letter matches donor, amount and date', 2600);
+  await quiet(page);
   await scrollTo(page, step(7), 18, 800);
   await say(page, '28 checks that run as code: the same answer every time', 3000);
   await say(page, '', 1200);
 
   // 1:30  The same desk inside a chat bot.
+  await quiet(page);
   await page.goto(BASE + '/bot?step&demo');
   await injectOverlays(page);
   const scene = async () => { await page.waitForFunction(() => window.botIdle === true, null, { timeout: 60000 }); await page.waitForTimeout(300); };
-  const next = async () => { await page.keyboard.press('Space'); await page.waitForTimeout(400); await scene(); };
+  const next = async () => { await quiet(page); await page.keyboard.press('Space'); await page.waitForTimeout(400); await scene(); };
   await scene();
   await say(page, 'The same desk, inside a chat bot, through the MCP connector', 600);
   await next();
@@ -250,9 +280,9 @@ async function record(page) {
   await say(page, '', 2500);
 
   // Close.
+  await quiet(page);
   await titleCard(page, MARK(92) + H('4,000 alerts in 2.6 seconds.<br>Identical on every run.') + SUB('Nothing closes unless the evidence explains it.'), 1500, 'close');
-  await titleCard(page, MARK(110) + WORD + SUB('Track 1 · Transaction monitoring<br>London Financial Crime Hackathon, November 2026') +
-    '<div style="font:500 20px var(--mono, Menlo),monospace;color:#2b4a7a;margin-top:18px">github.com/wallstreetdirectdelivery/screening-desk</div>', 3600);
+  await titleCard(page, MARK(110) + WORD + SUB('Track 1 · Transaction monitoring<br>London Financial Crime Hackathon, November 2026'), 3600);
 }
 
 async function replay(page) {

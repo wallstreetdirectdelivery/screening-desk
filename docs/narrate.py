@@ -67,11 +67,13 @@ def voices():
 
 def mix(video, out):
     timeline = json.load(open(os.path.join(VOICE_DIR, "timeline.json"), encoding="utf-8"))
-    command = ["ffmpeg", "-y", "-loglevel", "error", "-i", video]
+    start = float(os.environ.get("TRIM_START", "0.5"))   # seconds cut from the opening, while the first page loads
+    command = ["ffmpeg", "-y", "-loglevel", "error", "-ss", str(start), "-i", video]
     parts = []
     for i, item in enumerate(timeline, start=1):
         command += ["-i", os.path.join(VOICE_DIR, item["file"])]
-        parts.append("[{}:a]adelay={}|{}[a{}]".format(i, int(item["at"]), int(item["at"]), i))
+        at = max(0, int(item["at"] - start * 1000))
+        parts.append("[{}:a]adelay={}|{}[a{}]".format(i, at, at, i))
     graph = ";".join(parts) + ";" + "".join("[a{}]".format(i) for i in range(1, len(timeline) + 1)) + \
         "amix=inputs={}:normalize=0:dropout_transition=0,volume=1.6[aout]".format(len(timeline))
     command += ["-filter_complex", graph, "-map", "0:v", "-map", "[aout]", "-c:v", "libx264", "-preset", "slow", "-crf", "24",

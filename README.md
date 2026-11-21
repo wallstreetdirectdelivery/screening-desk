@@ -10,7 +10,7 @@ The system reads the transaction monitoring alerts of four UK institutions and d
 
 ![A case being screened: each document matched to the money, with the case file alongside](docs/screening-case.png)
 
-**Narrated walkthrough (2 min 2 s):** [`docs/demo.mp4`](docs/demo.mp4). It opens on a £1,800 payment whose invoice matches to the penny, and asks whether the alert should close. It then walks through the seven screening steps on that case, one at a time, to the escalation; shows a case that does close; and shows the same desk inside a chat bot. The bot thread in the video is a scripted mock-up for illustration: its wording is fixed and no model writes it, but every figure in it is fetched live through the MCP connector. The narration is synthesised with ElevenLabs.
+**Narrated walkthrough (2 min 9 s):** [`docs/demo.mp4`](docs/demo.mp4). It opens on a £1,800 payment whose invoice matches to the penny, and asks whether the alert should close. It then walks through the seven screening steps on that case, one at a time, to the escalation; shows a case that does close; and shows the same desk inside a chat bot. The bot thread in the video is a scripted mock-up for illustration: its wording is fixed and no model writes it, but every figure in it is fetched live through the MCP connector. The narration is synthesised with ElevenLabs.
 
 ## Results
 

@@ -2,7 +2,7 @@
 
 Start the viewer first: `python3 ui/server.py`, then open <http://127.0.0.1:8765>.
 
-The recorded video (`docs/demo.mp4`, 2 min 2 s) follows this storyline. For a live 3-minute demo, use the same order and add the optional parts at the end.
+The recorded video (`docs/demo.mp4`, 2 min 9 s) follows this storyline. For a live 3-minute demo, use the same order and add the optional parts at the end.
 
 ## The storyline
 
@@ -13,7 +13,7 @@ The recorded video (`docs/demo.mp4`, 2 min 2 s) follows this storyline. For a li
 | 0:15 | **The seven screening steps, one at a time,** on [BK-CS125943](http://127.0.0.1:8765/#bank/BK-CS125943): read the case, read the alert, read the policy, match the documents to the money (the invoice explains the payment), look for signs of crime (the listed director still owned 60% that day), test each alert, decide: ESCALATE without contacting the customer. | The case page; steps appear as they are narrated |
 | 1:02 | **Most alerts do close.** A gift letter matches the deposit on donor, amount and date. 28 checks that run as code: the same answer every time. | [IV-CS103503](http://127.0.0.1:8765/#investment/IV-CS103503) |
 | 1:21 | **The same desk inside a chat bot,** through its connector: the overnight queue, a new escalation, and "why not just close it?" answered from the case file. | <http://127.0.0.1:8765/bot> (`?step` advances a scene per Space; `?demo` hides the mock-up label) |
-| 1:46 | **Close.** 4,000 alerts in 2.6 seconds. Identical on every run. Nothing closes unless the evidence explains it. | Title card, then the event and repo |
+| 1:52 | **Close.** 4,000 alerts in 2.6 seconds. Identical on every run. Nothing closes unless the evidence explains it. | Title card, then the event and track |
 
 ## Optional extras for a live demo
 
