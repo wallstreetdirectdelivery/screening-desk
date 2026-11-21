@@ -1,0 +1,79 @@
+#!/usr/bin/env python3
+"""Alert-closing system. Usage: run <institution folder> <output file>
+
+Reads one institution folder and writes one JSON line per case in its cases.jsonl. It works from any
+working directory and uses only the Python 3 standard library.
+"""
+import json
+import os
+import sys
+
+sys.dont_write_bytecode = True
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+from tmlib import data, detect, engine  # noqa: E402
+
+
+def decide_case(inst, case):
+    ctx = engine.Context(inst, case)
+    detect.run_all(ctx)
+    result = engine.decide(ctx, detect.build_rfi)
+    return {
+        "case_id": case.id,
+        "alert_ids": case.alert_ids,
+        "verdict": result["verdict"],
+        "reason_code": result["reason_code"],
+        "reason": result["reason"],
+        "evidence": result["evidence"],
+    }
+
+
+def safe_default(row, why, evidence=()):
+    """If a case cannot be screened in full, escalate it rather than risk a wrongful close."""
+    return {
+        "case_id": row.get("case_id"),
+        "alert_ids": list(row.get("alert_ids") or []),
+        "verdict": "ESCALATE",
+        "reason_code": "ESC_UNEXPLAINED_FUNDS",
+        "reason": "{} The alerted activity therefore could not be matched to the documents on file, so it remains unexplained. "
+                  "The case is referred to the MLRO for manual review rather than closed without an explanation.".format(why),
+        "evidence": list(evidence)[:5],
+    }
+
+
+def screen(inst, row):
+    try:
+        case = inst.build_case(row)
+        wanted = list(row.get("alert_ids") or [])
+        if not case.alerts or len(case.alerts) < len(wanted):
+            # Without every alert there is no way to show that every alert is explained.
+            ids = [t for a in case.alerts for t in a.get("transaction_ids", [])]
+            return safe_default(row, "The file holds {} of the {} alerts listed for this case.".format(len(case.alerts), len(wanted) or "expected"), ids)
+        return decide_case(inst, case)
+    except Exception as exc:  # never drop a case, and never let one case stop the others
+        sys.stderr.write("warning: {} fell back to the safe default ({}: {})\n".format(row.get("case_id"), type(exc).__name__, exc))
+        return safe_default(row, "Part of the file for this case could not be read.")
+
+
+def main(argv):
+    if len(argv) != 3:
+        sys.exit("usage: run <institution folder> <output file>")
+    folder, out_path = os.path.abspath(argv[1]), os.path.abspath(argv[2])
+    try:
+        inst = data.Institution(folder)
+        rows = inst.case_rows
+    except Exception as exc:
+        # The folder could not be loaded as a whole. Every listed case still gets a line.
+        sys.stderr.write("warning: the folder could not be loaded ({}: {}); every case falls back to the safe default\n".format(type(exc).__name__, exc))
+        inst, rows = None, [r for r in data.load_jsonl(os.path.join(folder, "cases.jsonl")) if r.get("case_id")]
+    out_dir = os.path.dirname(out_path)
+    if out_dir:
+        os.makedirs(out_dir, exist_ok=True)
+    with open(out_path, "w", encoding="utf-8") as fh:
+        for row in rows:
+            result = screen(inst, row) if inst is not None else safe_default(row, "The institution folder could not be read in full.")
+            fh.write(json.dumps(result, ensure_ascii=False) + "\n")
+
+
+if __name__ == "__main__":
+    main(sys.argv)

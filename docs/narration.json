@@ -1,0 +1,18 @@
+{
+  "card:hook": "An eighteen hundred pound payment. The invoice matches it to the penny. Should this alert be closed?",
+  "card:title": "Screening desk reads each alert the way a good analyst does, and shows its working.",
+  "1 · Read the case": "Step one. It reads the customer, and what they told the bank to expect.",
+  "2 · Read the alert": "Step two. The alert: the payee matched an entry on the bank's internal list.",
+  "3 · Read the policy": "Step three. This bank's own policy, and its limits.",
+  "4 · Match the documents to the money": "Step four. Match the documents to the money. The invoice explains the payment.",
+  "5 · Look for signs of crime": "Step five. Look for signs of crime. The register shows the listed director still owned sixty percent on the day the money moved.",
+  "6 · Test each alert": "Step six. Test each alert. This one is not explained.",
+  "7 · Decide: ESCALATE, and never contact the customer": "Step seven. Decide. It escalates, and drafts the referral, without contacting the customer.",
+  "Most alerts do close: the gift letter matches donor, amount and date": "Most alerts do close. Here, a gift letter matches the deposit on donor, amount and date.",
+  "28 checks that run as code: the same answer every time": "Every verdict comes from twenty-eight checks that run as code, so the same case gets the same answer, every time.",
+  "The same desk, inside a chat bot, through the MCP connector": "And the same desk works inside a chat bot, through its connector.",
+  "Overnight, it reports the queue": "Overnight, the bot reports the queue.",
+  "A new alert: escalated, referral drafted, customer not contacted": "A new alert lands. It escalates, drafts the referral, and leaves the customer alone.",
+  "Asked why, it answers from the case file. The rules decide; the bot explains": "Asked why, it answers from the case file. The rules decide. The bot explains.",
+  "card:close": "Four thousand alerts in under three seconds. Identical on every run. And nothing closes unless the evidence explains it."
+}
