@@ -27,7 +27,7 @@ The development cases come with no answers, so "agreement" is against our own la
 
 ## Try it in 30 seconds
 
-It needs only Python 3. Nothing to install.
+It needs only Python 3. Nothing to install. All three commands below need the event's data room unzipped into `hackathon/institutions/` first, and `eval/check.sh` also needs the hand labels, which are not in this public copy.
 
 ```
 python3 ui/server.py            # then open http://127.0.0.1:8765
