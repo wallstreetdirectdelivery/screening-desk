@@ -247,7 +247,7 @@ async function record(page) {
   await stepLine(page, 7, '7 · Decide: ESCALATE, and never contact the customer', 3200);
   await quiet(page);
   await scrollTo(page, '.next', 40, 600);
-  await say(page, '', 1800);
+  await say(page, '', 600);
 
   // 1:10  Most alerts close.
   await quiet(page);
@@ -257,11 +257,8 @@ async function record(page) {
   await page.click('#skip');
   await scrollTo(page, step(4), 18, 500);
   await page.click(`${step(4)} button[data-ev="GFT-2351"]`).catch(() => {});
-  await say(page, 'Most alerts do close: the gift letter matches donor, amount and date', 2600);
-  await quiet(page);
-  await scrollTo(page, step(7), 18, 800);
-  await say(page, '28 checks that run as code: the same answer every time', 3000);
-  await say(page, '', 1200);
+  await say(page, 'Most alerts do close: the gift letter matches donor, amount and date', 1800);
+  await scrollTo(page, step(7), 18, 600);
 
   // 1:30  The same desk inside a chat bot.
   await quiet(page);
@@ -270,19 +267,18 @@ async function record(page) {
   const scene = async () => { await page.waitForFunction(() => window.botIdle === true, null, { timeout: 60000 }); await page.waitForTimeout(300); };
   const next = async () => { await quiet(page); await page.keyboard.press('Space'); await page.waitForTimeout(400); await scene(); };
   await scene();
-  await say(page, 'The same desk, inside a chat bot, through the MCP connector', 600);
-  await next();
-  await say(page, 'Overnight, it reports the queue', 300);
+  await say(page, 'The same desk, inside a chat bot, through the MCP connector', 300);
+  await page.keyboard.press('Space'); await page.waitForTimeout(400); await scene();
   await next();
   await say(page, 'A new alert: escalated, referral drafted, customer not contacted', 300);
   await next();
   await say(page, 'Asked why, it answers from the case file. The rules decide; the bot explains', 300);
-  await say(page, '', 2500);
+  await say(page, '', 1000);
 
   // Close.
   await quiet(page);
-  await titleCard(page, MARK(92) + H('4,000 alerts in 2.6 seconds.<br>Identical on every run.') + SUB('Nothing closes unless the evidence explains it.'), 1500, 'close');
-  await titleCard(page, MARK(110) + WORD + SUB('Track 1 · Transaction monitoring<br>London Financial Crime Hackathon, November 2026'), 3600);
+  await titleCard(page, MARK(92) + H('28 checks, run as code.<br>4,000 alerts in 2.6 seconds.') + SUB('Identical on every run. Nothing closes unless the evidence explains it.'), 1500, 'close');
+  await titleCard(page, MARK(110) + WORD + SUB('Track 1 · Transaction monitoring<br>London Financial Crime Hackathon, November 2026'), 2800);
 }
 
 async function replay(page) {
